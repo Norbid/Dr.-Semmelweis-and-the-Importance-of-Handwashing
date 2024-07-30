@@ -1,0 +1,19 @@
+# Imported libraries
+library(tidyverse)
+
+# Start coding here..
+yearly <- read.csv("data/yearly_deaths_by_clinic.csv")
+monthly <- read.csv("data/monthly_deaths.csv")
+yearly <- yearly %>% 
+  mutate(proportion_deaths = deaths / births) #column calculating the proportion of deaths per number of births for each year
+monthly <- monthly %>% 
+  mutate(proportion_deaths = deaths / births) #column calculating the proportion of deaths per number of births for each month in monthly
+ggplot(yearly, aes(x = year, y = proportion_deaths, color = clinic)) + geom_line() #yearly proportion of deaths plot
+ggplot(monthly, aes(x = date, y = proportion_deaths, group = 1)) + geom_line() #monthly proportion of deaths plot
+monthly$date <- as.Date(monthly$date, format = "%Y-%m-%d")
+monthly$handwashing_started <- if_else(monthly$date >= "1847-06-01", TRUE, FALSE) #handwashing invention threshold addition
+ggplot(monthly, aes(x = date, y = proportion_deaths, group = 1, color = handwashing_started)) + geom_line()
+monthly_summary <- monthly %>% 
+  group_by(handwashing_started) %>%
+  summarize(mean_proportion_deaths = mean(proportion_deaths)) 
+monthly_summary #mean proportion of deaths before and after handwashing
